@@ -2,8 +2,6 @@ import axios from 'axios';
 import SlimSelect from 'slim-select';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-const axios = require('axios');
-
 axios.defaults.headers.common['x-api-key'] =
   'live_6vq2cHckN7t0yswMZu1qyW9y0BV9do0EvxE47gmr6QMgE9pF9eZl5VjQ2qXeVEJM';
 
@@ -15,10 +13,6 @@ const catInfo = document.querySelector('.cat-info');
 const URLColecctions = 'https://api.thecatapi.com/v1/breeds';
 const URLFindCat = 'https://api.thecatapi.com/v1/images/search';
 const options = {};
-
-// new SlimSelect({
-//   select: breedSelect,
-// });
 
 const createElement = ({ type = 'option', attributes = '', text = '' }) => {
   //can write more elements
@@ -77,7 +71,11 @@ function fetchBreeds() {
     .then(datas => {
       breedSelect.append(...datas.map(createCatListElement));
       loader.style.display = 'none';
-      breedSelect.style.display = 'block';
+      breedSelect.style.display = 'flex';
+      breedSelect.style.width = '250px';
+      new SlimSelect({
+        select: breedSelect,
+      });
     })
     .catch(e => {
       console.log(e);
@@ -113,7 +111,7 @@ function fetchCatByBreed(event) {
           return catAllInformation;
         })
         .then(catAllInformation => {
-          catInfoCover = document.createElement('div');
+          const catInfoCover = document.createElement('div');
           catInfoCover.classList.add('cat-description');
           catInfo.append(catInfoCover);
           catInfoCover.append(...createCatInformation(catAllInformation));
