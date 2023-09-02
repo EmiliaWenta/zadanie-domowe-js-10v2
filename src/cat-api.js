@@ -1,23 +1,61 @@
 import axios from 'axios';
+import SlimSelect from 'slim-select';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+const axios = require('axios');
 
 axios.defaults.headers.common['x-api-key'] =
   'live_6vq2cHckN7t0yswMZu1qyW9y0BV9do0EvxE47gmr6QMgE9pF9eZl5VjQ2qXeVEJM';
 
 const breedSelect = document.querySelector('.breed-select');
+
 const loader = document.querySelector('.loader');
-const error = document.querySelector('.error');
+loader.style.display = 'none';
 const catInfo = document.querySelector('.cat-info');
 const URLColecctions = 'https://api.thecatapi.com/v1/breeds';
-
 const URLFindCat = 'https://api.thecatapi.com/v1/images/search';
 const options = {};
+
+// new SlimSelect({
+//   select: breedSelect,
+// });
 
 const createElement = ({ type = 'option', attributes = '', text = '' }) => {
   //can write more elements
   const el = document.createElement(type);
-  el.textContent = text;
-  el.setAttribute('value', attributes);
+  if (text) {
+    el.textContent = text;
+  }
+  if (attributes) {
+    el.setAttribute('value', attributes);
+  }
+
   return el;
+};
+
+const createCatInformation = catAllInformation => {
+  const catDescriptionElements = [
+    createElement({ type: 'h1', text: `${catAllInformation.name}` }),
+    createElement({ type: 'div', text: `${catAllInformation.description}` }),
+    createElement({
+      type: 'h2',
+      text: 'Temperament:',
+    }),
+    createElement({
+      type: 'div',
+      text: `${catAllInformation.temperament}`,
+    }),
+  ];
+  return catDescriptionElements;
+};
+
+const createImage = catImgUrl => {
+  const imageCover = document.createElement('div');
+  const imageofCat = document.createElement('img');
+  imageofCat.setAttribute('src', `${catImgUrl}`);
+  imageofCat.classList.add('image');
+  catInfo.append(imageCover);
+  imageCover.append(imageofCat);
 };
 
 const createCatListElement = data => {
@@ -30,44 +68,71 @@ const createCatListElement = data => {
 };
 
 function fetchBreeds() {
+  breedSelect.style.display = 'none';
+  loader.style.display = 'inline-block';
   fetch(URLColecctions, options)
     .then(response => {
       return response.json();
     })
     .then(datas => {
-      console.log(datas);
-
       breedSelect.append(...datas.map(createCatListElement));
+      loader.style.display = 'none';
+      breedSelect.style.display = 'block';
     })
     .catch(e => {
       console.log(e);
+      loader.style.display = 'none';
+      Notify.failure('Oops! Something went wrong! Try reloading the page!');
     });
 }
 
 function fetchCatByBreed(event) {
   const breedId = event.currentTarget.value;
-  console.log(breedId);
   const searchParams = new URLSearchParams({ breed_ids: breedId });
   const URL = `${URLFindCat}?${searchParams.toString()}`;
-  fetch(URL, options)
+  fetch(URL)
     .then(response => {
+      loader.style.display = 'inline-block';
       return response.json();
     })
     .then(data => {
-      console.log(data);
+      catInfo.innerHTML = '';
+      const catImgUrl = data[0].url;
+      createImage(catImgUrl);
+      const catID = data[0].id;
+      const findCatUrl = `https://api.thecatapi.com/v1/images/${catID}`;
+      return findCatUrl;
+    })
+    .then(findCatUrl => {
+      fetch(findCatUrl)
+        .then(response => {
+          return response.json();
+        })
+        .then(catInfo => {
+          const catAllInformation = catInfo.breeds[0];
+          return catAllInformation;
+        })
+        .then(catAllInformation => {
+          catInfoCover = document.createElement('div');
+          catInfoCover.classList.add('cat-description');
+          catInfo.append(catInfoCover);
+          catInfoCover.append(...createCatInformation(catAllInformation));
+          loader.style.display = 'none';
+        })
+        .catch(e => {
+          catInfo.style.display = 'none';
+          loader.style.display = 'none';
+          Notify.failure('Oops! Something went wrong! Try reloading the page!');
+          console.log(e);
+        });
     })
     .catch(e => {
+      catInfo.style.display = 'none';
+      loader.style.display = 'none';
+      Notify.failure('Oops! Something went wrong! Try reloading the page!');
       console.log(e);
     });
 }
 
 fetchBreeds();
 breedSelect.addEventListener('change', fetchCatByBreed);
-
-// Gdy użytkownik wybierze opcję w select, należy wykonać żądanie o pełnych informacjach o kocie do zasobu https://api.thecatapi.com/v1/images/search. Nie zapomnij podać w tym żądaniu parametru ciągu zapytania 'breed_ids' z identyfikatorem rasy.
-
-// https://api.thecatapi.com/v1/images/search?breed_ids=identyfikator_rasy
-
-// Napisz funkcję fetchCatByBreed(breedId), która oczekuje identyfikatora rasy, wykonuje żądanie HTTP i zwraca obietnicę z danymi o kocie - wynikiem żądania. Umieść ją w pliku cat-api.js i dokonaj nazwanego eksportu.
-
-// Jeśli żądanie zostanie pomyślnie wykonane, pod listą rozwijaną (select), w bloku div.cat-info pojawi się obraz oraz szczegółowe informacje o kocie: nazwa rasy, opis i temperament.
