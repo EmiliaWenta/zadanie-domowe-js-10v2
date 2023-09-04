@@ -61,28 +61,60 @@ const createCatListElement = data => {
   return catElements;
 };
 
-function fetchBreeds() {
-  breedSelect.style.display = 'none';
-  loader.style.display = 'inline-block';
-  fetch(URLColecctions, options)
+function fetchBreeds(url, options) {
+  return axios
+    .get(url, options)
     .then(response => {
-      return response.json();
-    })
-    .then(datas => {
-      breedSelect.append(...datas.map(createCatListElement));
-      loader.style.display = 'none';
-      breedSelect.style.display = 'flex';
-      breedSelect.style.width = '250px';
-      new SlimSelect({
-        select: breedSelect,
-      });
+      return response;
     })
     .catch(e => {
-      console.log(e);
-      loader.style.display = 'none';
       Notify.failure('Oops! Something went wrong! Try reloading the page!');
+      console.log(e);
     });
 }
+
+function fetchAndCreateCatList(URLColecctions, options) {
+  fetchBreeds(URLColecctions, options);
+}
+
+fetchAndCreateCatList(URLColecctions, options);
+
+// function fetchAndCreateCatList() {
+//   breedSelect.style.display = 'none';
+//   loader.style.display = 'inline-block';
+//   fetchBreeds(URLColecctions, options);
+
+// axios.get(URLColecctions).then(response => {
+//   console.log(typeof response);
+//   breedSelect.append(...response.map(createCatListElement));
+//   loader.style.display = 'none';
+//   breedSelect.style.display = 'flex';
+//   breedSelect.style.width = '250px';
+//   new SlimSelect({
+//     select: breedSelect,
+//   });
+// }
+// );
+// }
+
+// fetchAndCreateCatList();
+
+// function fetchBreeds() {
+//   breedSelect.style.display = 'none';
+//   loader.style.display = 'inline-block';
+//   fetch(URLColecctions, options)
+//     .then(response => {
+//       return response.json();
+//     })
+//     .then(datas => {
+//
+//     })
+//     .catch(e => {
+//       console.log(e);
+//       loader.style.display = 'none';
+//       Notify.failure('Oops! Something went wrong! Try reloading the page!');
+//     });
+// }
 
 function fetchCatByBreed(event) {
   const breedId = event.currentTarget.value;
@@ -132,5 +164,4 @@ function fetchCatByBreed(event) {
     });
 }
 
-fetchBreeds();
 breedSelect.addEventListener('change', fetchCatByBreed);
