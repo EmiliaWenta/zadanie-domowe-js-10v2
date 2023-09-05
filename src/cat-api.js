@@ -8,14 +8,21 @@ axios.defaults.headers.common['x-api-key'] =
 const breedSelect = document.querySelector('.breed-select');
 
 const loader = document.querySelector('.loader');
-loader.style.display = 'none';
+
 const catInfo = document.querySelector('.cat-info');
 const URLColecctions = 'https://api.thecatapi.com/v1/breeds';
 const URLFindCat = 'https://api.thecatapi.com/v1/images/search';
 const options = {};
 
+function showLoader() {
+  loader.classList.add('visible');
+}
+
+function hideLoader() {
+  loader.classList.remove('visible');
+}
+
 const createElement = ({ type = 'option', attributes = '', text = '' }) => {
-  //can write more elements
   const el = document.createElement(type);
   if (text) {
     el.textContent = text;
@@ -23,7 +30,6 @@ const createElement = ({ type = 'option', attributes = '', text = '' }) => {
   if (attributes) {
     el.setAttribute('value', attributes);
   }
-
   return el;
 };
 
@@ -65,79 +71,47 @@ function fetchBreeds(url, options) {
   return axios
     .get(url, options)
     .then(response => {
-      return response;
+      return response.data;
     })
     .catch(e => {
+      hideLoader();
       Notify.failure('Oops! Something went wrong! Try reloading the page!');
-      console.log(e);
     });
 }
 
-function fetchAndCreateCatList(URLColecctions, options) {
-  fetchBreeds(URLColecctions, options);
+function fetchAndCreateCatList(URLColecctions) {
+  breedSelect.style.display = 'none';
+  showLoader();
+  fetchBreeds(URLColecctions, options).then(response => {
+    breedSelect.append(...response.map(createCatListElement));
+    hideLoader();
+    breedSelect.style.display = 'flex';
+    breedSelect.style.width = '250px';
+    new SlimSelect({
+      select: breedSelect,
+    });
+  });
 }
 
-fetchAndCreateCatList(URLColecctions, options);
-
-// function fetchAndCreateCatList() {
-//   breedSelect.style.display = 'none';
-//   loader.style.display = 'inline-block';
-//   fetchBreeds(URLColecctions, options);
-
-// axios.get(URLColecctions).then(response => {
-//   console.log(typeof response);
-//   breedSelect.append(...response.map(createCatListElement));
-//   loader.style.display = 'none';
-//   breedSelect.style.display = 'flex';
-//   breedSelect.style.width = '250px';
-//   new SlimSelect({
-//     select: breedSelect,
-//   });
-// }
-// );
-// }
-
-// fetchAndCreateCatList();
-
-// function fetchBreeds() {
-//   breedSelect.style.display = 'none';
-//   loader.style.display = 'inline-block';
-//   fetch(URLColecctions, options)
-//     .then(response => {
-//       return response.json();
-//     })
-//     .then(datas => {
-//
-//     })
-//     .catch(e => {
-//       console.log(e);
-//       loader.style.display = 'none';
-//       Notify.failure('Oops! Something went wrong! Try reloading the page!');
-//     });
-// }
+fetchAndCreateCatList(URLColecctions);
 
 function fetchCatByBreed(event) {
   const breedId = event.currentTarget.value;
   const searchParams = new URLSearchParams({ breed_ids: breedId });
   const URL = `${URLFindCat}?${searchParams.toString()}`;
-  fetch(URL)
+  showLoader();
+  fetchBreeds(URL)
     .then(response => {
-      loader.style.display = 'inline-block';
-      return response.json();
-    })
-    .then(data => {
       catInfo.innerHTML = '';
-      const catImgUrl = data[0].url;
+      const catImgUrl = response[0].url;
       createImage(catImgUrl);
-      const catID = data[0].id;
+      const catID = response[0].id;
       const findCatUrl = `https://api.thecatapi.com/v1/images/${catID}`;
+
       return findCatUrl;
     })
     .then(findCatUrl => {
-      fetch(findCatUrl)
-        .then(response => {
-          return response.json();
-        })
+      fetchBreeds(findCatUrl)
         .then(catInfo => {
           const catAllInformation = catInfo.breeds[0];
           return catAllInformation;
@@ -147,20 +121,7 @@ function fetchCatByBreed(event) {
           catInfoCover.classList.add('cat-description');
           catInfo.append(catInfoCover);
           catInfoCover.append(...createCatInformation(catAllInformation));
-          loader.style.display = 'none';
-        })
-        .catch(e => {
-          catInfo.style.display = 'none';
-          loader.style.display = 'none';
-          Notify.failure('Oops! Something went wrong! Try reloading the page!');
-          console.log(e);
         });
-    })
-    .catch(e => {
-      catInfo.style.display = 'none';
-      loader.style.display = 'none';
-      Notify.failure('Oops! Something went wrong! Try reloading the page!');
-      console.log(e);
     });
 }
 
