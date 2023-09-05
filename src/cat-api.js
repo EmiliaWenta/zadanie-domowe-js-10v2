@@ -82,15 +82,19 @@ function fetchBreeds(url, options) {
 function fetchAndCreateCatList(URLColecctions) {
   breedSelect.style.display = 'none';
   showLoader();
-  fetchBreeds(URLColecctions, options).then(response => {
-    breedSelect.append(...response.map(createCatListElement));
-    hideLoader();
-    breedSelect.style.display = 'flex';
-    breedSelect.style.width = '250px';
-    new SlimSelect({
-      select: breedSelect,
+  fetchBreeds(URLColecctions, options)
+    .then(response => {
+      breedSelect.append(...response.map(createCatListElement));
+
+      breedSelect.style.display = 'flex';
+      breedSelect.style.width = '250px';
+      new SlimSelect({
+        select: breedSelect,
+      });
+    })
+    .finally(() => {
+      hideLoader();
     });
-  });
 }
 
 fetchAndCreateCatList(URLColecctions);
@@ -121,6 +125,9 @@ function fetchCatByBreed(event) {
           catInfoCover.classList.add('cat-description');
           catInfo.append(catInfoCover);
           catInfoCover.append(...createCatInformation(catAllInformation));
+        })
+        .finally(() => {
+          hideLoader();
         });
     });
 }
