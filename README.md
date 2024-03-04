@@ -30,8 +30,7 @@ Project is created with:
 - JS.
 
 ## Screenshots
-
-![image](https://github.com/EmiliaWenta/zadanie-domowe-js-10v2/assets/image.png)
+![image](https://github.com/EmiliaWenta/zadanie-domowe-js-10v2/assets/126571469/f37aaf2e-2638-412c-aff1-5cf3219dad02)
 
 ## Setup
 
