@@ -19,7 +19,7 @@
 Task goal:
 
 Creation of the frontend part of an application for searching information about
-cats based on their breeds.
+cats based on their breeds using The Cat API.
 
 ## Technologies Used
 
